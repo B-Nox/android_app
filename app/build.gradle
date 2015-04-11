@@ -1,4 +1,18 @@
+buildscript {
+  repositories {
+     mavenCentral()
+  }
+
+  dependencies {
+     classpath 'me.tatarka:gradle-retrolambda:3.0.1'
+  }
+}
+
 apply plugin: 'com.android.application'
+
+apply plugin: 'me.tatarka.retrolambda'
+
+
 
 android {
     compileSdkVersion 22
@@ -17,8 +31,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        // change compatibility to Java 8 to get Java 8 IDE support
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'io.reactivex:rxjava:1.0.9'
 }
