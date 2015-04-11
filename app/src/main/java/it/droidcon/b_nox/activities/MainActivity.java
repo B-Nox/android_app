@@ -13,6 +13,7 @@ import android.transition.Fade;
 import android.transition.Scene;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -88,7 +89,9 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
     @Override
     public void onNext(ArtDetail artDetail) {
-        artTitle.setText(artDetail.getTitle());
+        Log.i("NEXT", "onnext");
+        artTitle = (TextView) findViewById(R.id.title_content);
+        artTitle.setText(artDetail.getTitle().substring(9));
     }
 
 
@@ -109,7 +112,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
     private void setUpBluetoothObserver() {
         img = (ImageView) findViewById(R.id.img);
-        artTitle = (TextView) findViewById(R.id.title_content);
 
         img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
 
@@ -121,11 +123,14 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         if (bAdapter != null) {
             BluetoothLeScanner scanner = bAdapter.getBluetoothLeScanner();
 
+            Log.i("ASD", "setup scan");
+
             scanner.startScan(new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                    Observable.just(new ArtDetail(result.toString(), "url")).subscribe
+                    Observable.just(new ArtDetail(result.getDevice().toString(), "url")).subscribe
                             (MainActivity.this);
+                    Log.i("SCAN", result.getDevice().toString());
                 }
             });
         }
