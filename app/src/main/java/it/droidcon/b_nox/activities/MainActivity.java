@@ -2,6 +2,7 @@ package it.droidcon.b_nox.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.Scene;
@@ -11,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -22,9 +24,13 @@ public class MainActivity extends Activity implements Observer {
 
     @InjectView(R.id.container)
     ViewGroup container;
+
+    private View decorView;
+
+
     private Scene scene2;
     private Scene scene1;
-    private View decorView;
+    private Scene scene3;
 
 
     @Override
@@ -38,6 +44,7 @@ public class MainActivity extends Activity implements Observer {
 
         scene1 = Scene.getSceneForLayout(container, R.layout.scene_main_activity_intro, this);
         scene2 = Scene.getSceneForLayout(container, R.layout.scene_main_activity_main, this);
+        scene3 = Scene.getSceneForLayout(container, R.layout.scene_main_activity_loading, this);
 
 
         scene1.enter();
@@ -50,6 +57,9 @@ public class MainActivity extends Activity implements Observer {
                     .addTransition(new ChangeBounds());
             TransitionManager.go(scene2, set);
         }, 2000);
+
+
+        scene2.setEnterAction(this::setUpBluetoothObserver);
 
     }
 
@@ -103,4 +113,12 @@ public class MainActivity extends Activity implements Observer {
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }
+
+
+    private void setUpBluetoothObserver() {
+        ImageView img = (ImageView) findViewById(R.id.img);
+
+        img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
+    }
+
 }
