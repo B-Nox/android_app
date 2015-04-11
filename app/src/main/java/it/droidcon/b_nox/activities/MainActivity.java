@@ -1,6 +1,7 @@
 package it.droidcon.b_nox.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
@@ -16,11 +17,13 @@ import android.widget.ImageView;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import it.droidcon.b_nox.BluetoothListenerService;
 import it.droidcon.b_nox.R;
+import it.droidcon.b_nox.data.ArtDetail;
 import rx.Observer;
 
 
-public class MainActivity extends Activity implements Observer {
+public class MainActivity extends Activity implements Observer<ArtDetail> {
 
     @InjectView(R.id.container)
     ViewGroup container;
@@ -37,6 +40,11 @@ public class MainActivity extends Activity implements Observer {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent(this, BluetoothListenerService.class);
+
+        startService(intent);
+
 
         decorView = getWindow().getDecorView();
 
@@ -98,9 +106,10 @@ public class MainActivity extends Activity implements Observer {
     }
 
     @Override
-    public void onNext(Object o) {
+    public void onNext(ArtDetail artDetail) {
 
     }
+
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {

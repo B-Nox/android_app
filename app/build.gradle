@@ -1,11 +1,11 @@
 buildscript {
-  repositories {
-     mavenCentral()
-  }
+    repositories {
+        mavenCentral()
+    }
 
-  dependencies {
-     classpath 'me.tatarka:gradle-retrolambda:3.0.1'
-  }
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.0.1'
+    }
 }
 
 apply plugin: 'com.android.application'
@@ -45,4 +45,7 @@ dependencies {
     compile 'io.reactivex:rxjava:1.0.9'
     compile 'com.jakewharton:butterknife:6.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+
+    provided 'org.projectlombok:lombok:1.16.0'
+
 }
