@@ -15,6 +15,7 @@
             android:visibility="visible"
             android:textSize="20dp"
             android:gravity="left|top"
+            style="@style/CodeFont"
             />
 
 
@@ -27,6 +28,7 @@
             android:id="@+id/title_content"
             android:textSize="50dp"
             android:layout_marginBottom="20dp"
+            style="@style/CodeFont"
             />
 
 
