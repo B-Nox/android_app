@@ -9,7 +9,7 @@ import lombok.Value;
 @Value
 public final class ArtDetail {
 
-    String titolo;
+    String title;
     String url;
 
 }

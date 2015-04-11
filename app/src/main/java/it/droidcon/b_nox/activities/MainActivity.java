@@ -1,7 +1,11 @@
 package it.droidcon.b_nox.activities;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.os.Bundle;
 import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
@@ -9,17 +13,16 @@ import android.transition.Fade;
 import android.transition.Scene;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import it.droidcon.b_nox.BluetoothListenerService;
 import it.droidcon.b_nox.R;
 import it.droidcon.b_nox.data.ArtDetail;
+import rx.Observable;
 import rx.Observer;
 
 
@@ -34,6 +37,8 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     private Scene scene2;
     private Scene scene1;
     private Scene scene3;
+    private ImageView img;
+    private TextView artTitle;
 
 
     @Override
@@ -41,9 +46,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent intent = new Intent(this, BluetoothListenerService.class);
-
-        startService(intent);
 
 
         decorView = getWindow().getDecorView();
@@ -73,27 +75,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     public void onCompleted() {
@@ -107,7 +88,7 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
     @Override
     public void onNext(ArtDetail artDetail) {
-
+        artTitle.setText(artDetail.getTitle());
     }
 
 
@@ -127,9 +108,27 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
 
     private void setUpBluetoothObserver() {
-        ImageView img = (ImageView) findViewById(R.id.img);
+        img = (ImageView) findViewById(R.id.img);
+        artTitle = (TextView) findViewById(R.id.title_content);
 
         img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
-    }
 
+
+
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        BluetoothAdapter bAdapter = bluetoothManager.getAdapter();
+
+        if (bAdapter != null) {
+            BluetoothLeScanner scanner = bAdapter.getBluetoothLeScanner();
+
+            scanner.startScan(new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    Observable.just(new ArtDetail(result.toString(), "url")).subscribe
+                            (MainActivity.this);
+                }
+            });
+        }
+
+    }
 }
