@@ -40,18 +40,18 @@ public class ScanCallback extends android.bluetooth.le.ScanCallback{
             }
         }
 
-        if (currentDevice == null){
-            currentDevice = result;
-            onNewDevice(result);
-        }
-        else if (nearestBeacon != null && lsbeacon.contains(nearestBeacon)) {
+        if (currentDevice != null && nearestBeacon != null && lsbeacon.contains(nearestBeacon)) {
 
             if( !nearestBeacon.equals(currentDevice.getDevice().toString())) {
                 Log.d("DEBUG" , "sending " + result.getDevice().toString() );
                 currentDevice = result;
                 onNewDevice(result);
             }
+        }else if (currentDevice == null && lsbeacon.contains(nearestBeacon)){
+            currentDevice = result;
+            onNewDevice(result);
         }
+
 
 
 
