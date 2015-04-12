@@ -27,32 +27,41 @@ public class ScanCallback extends android.bluetooth.le.ScanCallback{
     @Override
     public void onScanResult(int callbackType, ScanResult result) {
         Log.d("DEBUG" , result.getDevice().toString() );
+
+        final String device = result.getDevice().toString();
+
         final List<String> lsbeacon = Constants.BEACONS;
-        mymap.put(result.getDevice().toString(), Math.abs(result.getRssi()));
 
-        int min = 20000;
-        String nearestBeacon = null;
+        if(lsbeacon.contains(device)) {
 
-        for(Map.Entry<String, Integer> entry : mymap.entrySet()){
-            if(min > entry.getValue()){
-                min = entry.getValue();
-                nearestBeacon = entry.getKey();
+
+            mymap.put(device, Math.abs(result.getRssi()));
+
+
+            int min = 20000;
+            String nearestBeacon = null;
+
+            for (Map.Entry<String, Integer> entry : mymap.entrySet()) {
+                if (min > entry.getValue()) {
+                    min = entry.getValue();
+                    nearestBeacon = entry.getKey();
+                }
             }
-        }
 
-        if (currentDevice != null && nearestBeacon != null && lsbeacon.contains(nearestBeacon)) {
+            if (currentDevice != null) {
 
-            if( !nearestBeacon.equals(currentDevice)) {
-                Log.d("DEBUG" , "sending " + result.getDevice().toString() );
-                currentDevice = result.getDevice().toString();
+                if (!nearestBeacon.equals(currentDevice)) {
+                    Log.d("DEBUG", "sending " + device);
+                    currentDevice = device;
+                    onNewDevice(currentDevice);
+                }
+            } else {
+                Log.d("DEBUG", "sending " + device);
+                currentDevice = device;
                 onNewDevice(currentDevice);
             }
-        }else if (lsbeacon.contains(nearestBeacon)){
-            currentDevice = nearestBeacon;
-            onNewDevice(currentDevice);
+
         }
-
-
 
 
 //        if (currentDevice != null) {
@@ -81,7 +90,7 @@ public class ScanCallback extends android.bluetooth.le.ScanCallback{
 
 
     private void onNewDevice(String device) {
- 
+
         act.currentDetail = new ArtDetail(act, device, Constants.SERVER_ADDRESS);
 
     }
