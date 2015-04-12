@@ -5,7 +5,6 @@ import android.util.Log;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,19 +15,23 @@ import it.droidcon.b_nox.activities.MainActivity;
  * Created by demiurgo on 4/11/15.
  */
 
-
 public final class ArtDetail {
 
     public String id;
     public String title;
     public String author;
+
     public String date;
     public String place;
     public String description;
 
-    public String[][] images;
-    public String[][] videos;
-    public String[][] audios;
+    public String image;
+    public String audio;
+
+
+    public ArtDetail() {
+
+    }
 
     public ArtDetail(MainActivity activity, String identifier, String serverAddress) {
 
@@ -52,29 +55,10 @@ public final class ArtDetail {
                             date = response.getString("date");
                             place = response.getString("place");
                             description = response.getString("description");
-
-                            JSONArray array = response.getJSONArray("images");
-                            images = new String[array.length()][2];
-                            for (int i = 0; i < array.length(); i++) {
-                                images[i][0] = array.getJSONObject(i).getString("path");
-                                images[i][1] = array.getJSONObject(i).getString("description");
-                            }
-
-                            array = response.getJSONArray("audios");
-                            audios = new String[array.length()][2];
-                            for (int i = 0; i < array.length(); i++) {
-                                audios[i][0] = array.getJSONObject(i).getString("path");
-                                audios[i][1] = array.getJSONObject(i).getString("description");
-                            }
-
-                            array = response.getJSONArray("videos");
-                            videos = new String[array.length()][2];
-                            for (int i = 0; i < array.length(); i++) {
-                                videos[i][0] = array.getJSONObject(i).getString("path");
-                                videos[i][1] = array.getJSONObject(i).getString("description");
-                            }
-
                             activity.onDetailLoaded();
+
+                            image = response.getString("image");
+                            audio = response.getString("audio");
 
 
                         } catch (JSONException e) {

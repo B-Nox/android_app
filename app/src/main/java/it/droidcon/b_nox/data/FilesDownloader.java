@@ -2,7 +2,6 @@ package it.droidcon.b_nox.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.PowerManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,7 +23,6 @@ public class FilesDownloader extends AsyncTask<String, Integer, String> {
     private MainActivity activity;
     private String type;
     private String localFile;
-    private PowerManager.WakeLock mWakeLock;
 
     // fileType: "image", "audio", "video"
     public FilesDownloader(Context context, MainActivity callingActivity, String fileName, String fileType) {
@@ -88,28 +86,16 @@ public class FilesDownloader extends AsyncTask<String, Integer, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        // take CPU lock to prevent CPU from going off if the user
-        // presses the power button during download
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
-        mWakeLock.acquire();
     }
 
 
     @Override
     protected void onPostExecute(String result) {
-        mWakeLock.release();
 
         switch (this.type) {
-            case "image":
-                activity.onImageDownload(result);
-				break;
             case "audio":
                 activity.onAudioDownload(result);
 				break;
-            case "video":
-                activity.onVideoDownload(result);
-        		break;
 			default: return;
 		}
 

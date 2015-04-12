@@ -2,13 +2,29 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme"
-           parent="android:ThemeOverlay.Material.Dark">
+           parent="android:ThemeOverlay.Material.Dark.ActionBar">
+
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowSharedElementEnterTransition">@transition/change_image_transform
         </item>
         <item name="android:windowSharedElementExitTransition">@transition/change_image_transform
         </item>
+
+        <!--<item name="android:windowEnterTransition">@android:transition/fade</item>-->
+        <!--<item name="android:windowExitTransition">@android:transition/fade</item>-->
+
+
+        <!--  -->
+
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <!--<item name="android:windowContentOverlay">@null</item>-->
+        <!--<item name="android:windowTranslucentNavigation">true</item>-->
+        <!--<item name="android:windowTranslucentStatus">true</item>-->
+        <!--<item name="android:windowAllowEnterTransitionOverlap">false</item>-->
+
     </style>
 
 </resources>
