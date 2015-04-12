@@ -55,10 +55,12 @@ public final class ArtDetail {
                             date = response.getString("date");
                             place = response.getString("place");
                             description = response.getString("description");
-                            activity.onDetailLoaded();
-
                             image = response.getString("image");
                             audio = response.getString("audio");
+
+                            if(title!=null && image != null) {
+                                activity.onDetailLoaded();
+                            }
 
 
                         } catch (JSONException e) {

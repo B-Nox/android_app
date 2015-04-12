@@ -31,10 +31,9 @@ import it.droidcon.b_nox.R;
 import it.droidcon.b_nox.data.ArtDetail;
 import it.droidcon.b_nox.data.FilesDownloader;
 import it.droidcon.b_nox.utils.Constants;
-import rx.Observer;
 
 
-public class MainActivity extends Activity implements Observer<ArtDetail> {
+public class MainActivity extends Activity {
 
     @InjectView(R.id.container)
     ViewGroup container;
@@ -52,6 +51,8 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     public final static String DETAIL_EXTRA_TITOLO = "TITOLO";
     public final static String DETAIL_EXTRA_IMAGE = "IMAGE";
     public final static String DETAIL_EXTRA_AUDIO = "AUDIO";
+
+    private STATE currentState = STATE.INTRO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,9 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
             set.addTransition(new Fade())
                     .addTransition(new ChangeBounds());
             TransitionManager.go(scene2, set);
+
+            currentState = STATE.MAIN_LOGO;
+
         }, 2000);
 
 
@@ -87,28 +91,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         scene3.setEnterAction(this::setUpScene3ClickHandler);
     }
 
-
-    @Override
-    public void onCompleted() {
-
-    }
-
-    @Override
-    public void onError(Throwable e) {
-
-    }
-
-    @Override
-    public void onNext(ArtDetail artDetail) {
-        Log.i("NEXT", "onnext");
-        artTitle = (TextView) findViewById(R.id.title_content);
-        Log.i("NEXT", artDetail + "");
-        Log.i("NEXT", artTitle + "");
-        if (artTitle != null) {
-            artTitle.setText(artDetail.title.substring(9));
-            artTitle.postInvalidate();
-        }
-    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -124,11 +106,19 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         }
     }
 
+    private void transitionToLoading() {
+        currentState = STATE.LOADING_OPERA;
+        TransitionManager.go(scene3, new AutoTransition());
+        scene3.setEnterAction(() ->
+                Picasso.with(this)
+                        .load(Constants.SERVER_ADDRESS + "/" + currentDetail.image)
+                        .fit().into(img));
+    }
 
     private void setUpBluetoothObserver() {
         img = (ImageView) findViewById(R.id.img);
 
-        img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
+        img.setOnClickListener(v -> transitionToLoading());
 
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter bAdapter = bluetoothManager.getAdapter();
@@ -144,7 +134,7 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
                     if (currentDevice != null) {
 
-                        if (currentDevice.getDevice().getAddress().startsWith("00:07:80")) {
+                        if (Constants.BEACONS.contains(currentDevice.getDevice().toString()) ) {
 
                             if (result.getDevice().getAddress().startsWith("00:07:80") && (result.getRssi() > currentDevice.getRssi()) &&
                                     !(result.getDevice().getAddress().equals(currentDevice.getDevice().getAddress()))) {
@@ -154,13 +144,13 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
                                 onNewDevice(result);
                             }
-                        } else if (result.getDevice().getAddress().startsWith("00:07:80")) {
+                        } else if (Constants.BEACONS.contains(result.getDevice().toString()))  {
                             Log.i("NEW BLE", "Old: " + currentDevice.getDevice().toString() + " " + currentDevice.getRssi() +
                                     " New: " + result.getDevice().toString() + " " + result.getRssi());
 
                             onNewDevice(result);
                         }
-                    } else if (result.getDevice().getAddress().startsWith("00:07:80")) {
+                    } else if (Constants.BEACONS.contains(result.getDevice().toString())) {
                         Log.i("NEW BLE", "New: " + result.getDevice().toString() + " " + result.getRssi());
                         onNewDevice(result);
                     }
@@ -199,9 +189,15 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         currentDevice = device;
         currentDetail = new ArtDetail(this, currentDevice.getDevice().toString(), Constants.SERVER_ADDRESS);
 
+
     }
 
     public void onDetailLoaded() {
+        Log.i("onDetailLoaded", "Loaded!");
+
+        if (currentState.equals(STATE.MAIN_LOGO)) {
+            transitionToLoading();
+        }
 
         FilesDownloader downloader;
 
@@ -213,13 +209,15 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         Log.i("DL", "Starting download of " + Constants.SERVER_ADDRESS + "/" + this.currentDetail.audio);
         downloader.execute(Constants.SERVER_ADDRESS + "/" + this.currentDetail.audio);
 
-        Picasso.with(this)
-                .load(Constants.SERVER_ADDRESS + "/" + currentDetail.image)
-                .fit().into(img);
     }
 
     public void onAudioDownload(String filePath) {
         Log.i("DL", "Download completed of " + filePath);
+    }
+
+
+    enum STATE {
+        INTRO, MAIN_LOGO, LOADING_OPERA;
     }
 
 
