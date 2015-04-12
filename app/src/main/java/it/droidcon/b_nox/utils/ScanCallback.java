@@ -15,7 +15,7 @@ import it.droidcon.b_nox.data.ArtDetail;
  */
 public class ScanCallback extends android.bluetooth.le.ScanCallback{
 
-    private ScanResult currentDevice;
+    private String currentDevice;
     MainActivity act;
 
     public ScanCallback(MainActivity act){
@@ -42,14 +42,14 @@ public class ScanCallback extends android.bluetooth.le.ScanCallback{
 
         if (currentDevice != null && nearestBeacon != null && lsbeacon.contains(nearestBeacon)) {
 
-            if( !nearestBeacon.equals(currentDevice.getDevice().toString())) {
+            if( !nearestBeacon.equals(currentDevice)) {
                 Log.d("DEBUG" , "sending " + result.getDevice().toString() );
-                currentDevice = result;
-                onNewDevice(result);
+                currentDevice = result.getDevice().toString();
+                onNewDevice(currentDevice);
             }
-        }else if (currentDevice == null && lsbeacon.contains(nearestBeacon)){
-            currentDevice = result;
-            onNewDevice(result);
+        }else if (lsbeacon.contains(nearestBeacon)){
+            currentDevice = nearestBeacon;
+            onNewDevice(currentDevice);
         }
 
 
@@ -80,10 +80,9 @@ public class ScanCallback extends android.bluetooth.le.ScanCallback{
     }
 
 
-    private void onNewDevice(ScanResult device) {
-
-        currentDevice = device;
-        act.currentDetail = new ArtDetail(act, currentDevice.getDevice().toString(), Constants.SERVER_ADDRESS);
+    private void onNewDevice(String device) {
+ 
+        act.currentDetail = new ArtDetail(act, device, Constants.SERVER_ADDRESS);
 
     }
 
