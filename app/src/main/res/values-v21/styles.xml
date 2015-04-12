@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="android:Theme.Material.Light">
+        <item name="android:windowBackground">@drawable/app_background</item>
+    </style>
+
+    <style name="CodeFont" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:fontFamily">coneria</item>
     </style>
 </resources>

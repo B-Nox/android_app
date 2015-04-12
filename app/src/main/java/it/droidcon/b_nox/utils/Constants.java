@@ -15,4 +15,6 @@ public class Constants {
         BEACONS.add("00:07:80:20:02:0E");
         BEACONS.add("00:07:80:20:01:A0");
     }
+
+    public static final String SERVER_ADDRESS = "http://192.168.23.254";
 }
