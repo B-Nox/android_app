@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+
 import android.os.Bundle;
 import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
@@ -23,6 +24,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import it.droidcon.b_nox.R;
 import it.droidcon.b_nox.data.ArtDetail;
+import it.droidcon.b_nox.data.FilesDownloader;
 import rx.Observable;
 import rx.Observer;
 
@@ -33,7 +35,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     ViewGroup container;
 
     private View decorView;
-
 
     private Scene scene2;
     private Scene scene1;
@@ -75,8 +76,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     }
 
 
-
-
     @Override
     public void onCompleted() {
 
@@ -91,7 +90,7 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     public void onNext(ArtDetail artDetail) {
         Log.i("NEXT", "onnext");
         artTitle = (TextView) findViewById(R.id.title_content);
-        artTitle.setText(artDetail.getTitle().substring(9));
+        artTitle.setText(artDetail.title.substring(9));
     }
 
 
@@ -128,7 +127,7 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
             scanner.startScan(new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                    Observable.just(new ArtDetail(result.getDevice().toString(), "url")).subscribe
+                    Observable.just(new ArtDetail(result.getDevice().toString())).subscribe
                             (MainActivity.this);
                     Log.i("SCAN", result.getDevice().toString());
                 }
@@ -136,4 +135,21 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         }
 
     }
+
+    public void onImageDownload(String filePath) {
+
+    }
+
+    public void onAudioDownload(String filePath) {
+
+    }
+
+    public void onVideoDownload(String filePath) {
+
+    }
+
+
+
+
+
 }
