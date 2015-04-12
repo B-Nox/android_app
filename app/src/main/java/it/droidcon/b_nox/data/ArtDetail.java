@@ -58,7 +58,7 @@ public final class ArtDetail {
                             image = response.getString("image");
                             audio = response.getString("audio");
 
-                            if(title!=null && image != null) {
+                            if(title!=null && image != null && audio!=null && description != null) {
                                 activity.onDetailLoaded();
                             }
 

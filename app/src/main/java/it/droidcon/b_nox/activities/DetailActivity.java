@@ -3,7 +3,11 @@ package it.droidcon.b_nox.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.transition.AutoTransition;
+import android.transition.Scene;
+import android.transition.TransitionManager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +30,13 @@ public class DetailActivity extends Activity {
     @InjectView(R.id.img)
     protected ImageView img;
 
+    @InjectView(R.id.container)
+    ViewGroup group;
+    private Scene scene1;
+    private Scene scene2;
+
+    private boolean inPlay = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,10 +57,22 @@ public class DetailActivity extends Activity {
         detail.audio = i.getStringExtra(MainActivity.DETAIL_EXTRA_AUDIO);
         detail.image = i.getStringExtra(MainActivity.DETAIL_EXTRA_IMAGE);
 
-        title.setText(detail != null || detail.title.isEmpty() ? "COOKIE JAR!" : detail.title);
+        title.setText(detail == null || detail.title.isEmpty() ? "COOKIE JAR!" : detail.title);
 
-        Picasso.with(this).load(Constants.SERVER_ADDRESS+"/"+detail.image)
+        Picasso.with(this).load(Constants.SERVER_ADDRESS + "/" + detail.image)
                 .fit().into(img);
+
+
+        scene1 = Scene.getSceneForLayout(group, R.layout.scene_detail_activity_normal, this);
+        scene2 = Scene.getSceneForLayout(group, R.layout.scene_detail_activity_playing, this);
+
+        scene1.setEnterAction(()->{
+            ((TextView)findViewById(R.id.description))
+                    .setText(getIntent().getStringExtra(MainActivity.DETAIL_EXTRA_DESC));
+        });
+
+
+        scene1.enter();
 
     }
 
@@ -68,7 +91,20 @@ public class DetailActivity extends Activity {
     }
 
 
-    public void back(View v){
+    public void back(View v) {
         finishAfterTransition();
     }
+
+
+    public void play(View v) {
+        if (inPlay) {
+            TransitionManager.go(scene1, new AutoTransition());
+        }else{
+            TransitionManager.go(scene2, new AutoTransition());
+        }
+        inPlay = !inPlay;
+
+    }
+
+
 }

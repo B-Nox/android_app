@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
     public ArtDetail currentDetail = null;
     public final static String DETAIL_EXTRA_TITOLO = "TITOLO";
     public final static String DETAIL_EXTRA_IMAGE = "IMAGE";
+    public final static String DETAIL_EXTRA_DESC = "DESCRIPTION";
     public final static String DETAIL_EXTRA_AUDIO = "AUDIO";
 
     private STATE currentState = STATE.INTRO;
@@ -146,6 +147,7 @@ public class MainActivity extends Activity {
             intent.putExtra(DETAIL_EXTRA_TITOLO, currentDetail.title);
             intent.putExtra(DETAIL_EXTRA_AUDIO, currentDetail.audio);
             intent.putExtra(DETAIL_EXTRA_IMAGE, currentDetail.image);
+            intent.putExtra(DETAIL_EXTRA_DESC, currentDetail.description);
         }
 
         artTitle = (TextView) findViewById(R.id.title_content);
