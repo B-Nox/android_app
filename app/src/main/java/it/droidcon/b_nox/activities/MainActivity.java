@@ -5,8 +5,6 @@ import android.app.ActivityOptions;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.content.Intent;
 import android.os.Bundle;
 import android.transition.AutoTransition;
@@ -16,10 +14,14 @@ import android.transition.Scene;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -27,10 +29,9 @@ import it.droidcon.b_nox.R;
 import it.droidcon.b_nox.data.ArtDetail;
 import it.droidcon.b_nox.data.FilesDownloader;
 import it.droidcon.b_nox.utils.Constants;
-import rx.Observer;
 
 
-public class MainActivity extends Activity implements Observer<ArtDetail> {
+public class MainActivity extends Activity {
 
     @InjectView(R.id.container)
     ViewGroup container;
@@ -43,16 +44,25 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     private ImageView img;
     private TextView artTitle;
 
+
     public ArtDetail currentDetail = null;
+    public final static String DETAIL_EXTRA_TITOLO = "TITOLO";
+    public final static String DETAIL_EXTRA_IMAGE = "IMAGE";
+    public final static String DETAIL_EXTRA_AUDIO = "AUDIO";
+
+    private STATE currentState = STATE.INTRO;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        getActionBar().hide();
         setContentView(R.layout.activity_main);
 
 
         decorView = getWindow().getDecorView();
+        onWindowFocusChanged(true);
 
         ButterKnife.inject(this);
 
@@ -70,6 +80,9 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
             set.addTransition(new Fade())
                     .addTransition(new ChangeBounds());
             TransitionManager.go(scene2, set);
+
+            currentState = STATE.MAIN_LOGO;
+
         }, 2000);
 
 
@@ -77,28 +90,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         scene3.setEnterAction(this::setUpScene3ClickHandler);
     }
 
-
-    @Override
-    public void onCompleted() {
-
-    }
-
-    @Override
-    public void onError(Throwable e) {
-
-    }
-
-    @Override
-    public void onNext(ArtDetail artDetail) {
-        Log.i("NEXT", "onnext");
-        artTitle = (TextView) findViewById(R.id.title_content);
-        Log.i("NEXT", artDetail + "");
-        Log.i("NEXT", artTitle + "");
-        if (artTitle != null) {
-            artTitle.setText(artDetail.title.substring(9));
-            artTitle.postInvalidate();
-        }
-    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -114,11 +105,19 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         }
     }
 
+    private void transitionToLoading() {
+        currentState = STATE.LOADING_OPERA;
+        TransitionManager.go(scene3, new AutoTransition());
+        scene3.setEnterAction(() ->
+                Picasso.with(this)
+                        .load(Constants.SERVER_ADDRESS + "/" + currentDetail.image)
+                        .fit().into(img));
+    }
 
     private void setUpBluetoothObserver() {
         img = (ImageView) findViewById(R.id.img);
 
-        img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
+        img.setOnClickListener(v -> transitionToLoading());
 
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter bAdapter = bluetoothManager.getAdapter();
@@ -128,8 +127,10 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
             Log.i("ASD", "setup scan");
 
+
             scanner.startScan(new it.droidcon.b_nox.utils.ScanCallback(this));
         } 
+
     }
 
 
@@ -140,7 +141,19 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
     private void transitionToDetailActivity(final View v) {
         Intent intent = new Intent(this, DetailActivity.class);
-        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, v, "image");
+
+        if (currentDetail != null) {
+            intent.putExtra(DETAIL_EXTRA_TITOLO, currentDetail.title);
+            intent.putExtra(DETAIL_EXTRA_AUDIO, currentDetail.audio);
+            intent.putExtra(DETAIL_EXTRA_IMAGE, currentDetail.image);
+        }
+
+        artTitle = (TextView) findViewById(R.id.title_content);
+
+        ActivityOptions options =
+                ActivityOptions.makeSceneTransitionAnimation(this,
+                        new Pair(v, "image"),
+                        new Pair(artTitle, "title"));
         startActivity(intent, options.toBundle());
     }
 
@@ -148,44 +161,31 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
 
     public void onDetailLoaded() {
+        Log.i("onDetailLoaded", "Loaded!");
+
+        if (currentState.equals(STATE.MAIN_LOGO)) {
+            transitionToLoading();
+        }
 
         FilesDownloader downloader;
 
 		/* Fill the interface with the new data */
 
-        for (int i = 0; i < currentDetail.images.length; i++) {
-            downloader = new FilesDownloader(this.getApplicationContext(), this,
-                    this.currentDetail.images[i][0], "image");
-            Log.i("DL", "Starting download of " + Constants.SERVER_ADDRESS + "/" + this.currentDetail.images[i][0]);
-            downloader.execute(Constants.SERVER_ADDRESS + "/" + this.currentDetail.images[i][0]);
-        }
 
-        for (int i = 0; i < currentDetail.audios.length; i++) {
-            downloader = new FilesDownloader(this.getApplicationContext(), this,
-                    this.currentDetail.audios[i][0], "audio");
-            Log.i("DL", "Starting download of " + Constants.SERVER_ADDRESS + "/" + this.currentDetail.audios[i][0]);
-            downloader.execute(Constants.SERVER_ADDRESS + "/" + this.currentDetail.audios[i][0]);
-        }
+        downloader = new FilesDownloader(this.getApplicationContext(), this,
+                this.currentDetail.audio, "audio");
+        Log.i("DL", "Starting download of " + Constants.SERVER_ADDRESS + "/" + this.currentDetail.audio);
+        downloader.execute(Constants.SERVER_ADDRESS + "/" + this.currentDetail.audio);
 
-        for (int i = 0; i < currentDetail.videos.length; i++) {
-            downloader = new FilesDownloader(this.getApplicationContext(), this,
-                    this.currentDetail.videos[i][0], "video");
-            Log.i("DL", "Starting download of " + Constants.SERVER_ADDRESS + "/" + this.currentDetail.videos[i][0]);
-            downloader.execute(Constants.SERVER_ADDRESS + "/" + this.currentDetail.videos[i][0]);
-        }
-
-    }
-
-    public void onImageDownload(String filePath) {
-        Log.i("DL", "Download completed of " + filePath);
     }
 
     public void onAudioDownload(String filePath) {
         Log.i("DL", "Download completed of " + filePath);
     }
 
-    public void onVideoDownload(String filePath) {
-        Log.i("DL", "Download completed of " + filePath);
+
+    enum STATE {
+        INTRO, MAIN_LOGO, LOADING_OPERA;
     }
 
 
