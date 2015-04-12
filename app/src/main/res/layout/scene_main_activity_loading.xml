@@ -10,7 +10,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/hello_world"
+            android:text="@string/museum_name"
             android:id="@+id/title"
             android:visibility="visible"
             android:textSize="20dp"
@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:text="titolino"
             android:layout_centerHorizontal="true"
+            android:elevation="2dp"
             android:layout_above="@+id/img"
             android:id="@+id/title_content"
             android:textSize="50dp"
@@ -34,8 +35,11 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:id="@+id/img"
+            android:elevation="8dp"
+            android:transitionName="image"
             android:layout_centerInParent="true"
-            android:background="#FF0"/>
+            android:src="@drawable/sun_moon"
+            />
     </RelativeLayout>
 
 </merge>

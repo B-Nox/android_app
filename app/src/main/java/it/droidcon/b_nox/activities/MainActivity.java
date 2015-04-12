@@ -1,11 +1,13 @@
 package it.droidcon.b_nox.activities;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Intent;
 import android.os.Bundle;
 import android.transition.AutoTransition;
 import android.transition.ChangeBounds;
@@ -19,10 +21,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.concurrent.TimeUnit;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import it.droidcon.b_nox.R;
 import it.droidcon.b_nox.data.ArtDetail;
+import it.droidcon.b_nox.utils.Constants;
 import rx.Observable;
 import rx.Observer;
 
@@ -48,7 +53,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         setContentView(R.layout.activity_main);
 
 
-
         decorView = getWindow().getDecorView();
 
         ButterKnife.inject(this);
@@ -71,10 +75,8 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
 
         scene2.setEnterAction(this::setUpBluetoothObserver);
-
+        scene3.setEnterAction(this::setUpScene3ClickHandler);
     }
-
-
 
 
     @Override
@@ -91,9 +93,13 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     public void onNext(ArtDetail artDetail) {
         Log.i("NEXT", "onnext");
         artTitle = (TextView) findViewById(R.id.title_content);
-        artTitle.setText(artDetail.getTitle().substring(9));
+        Log.i("NEXT", artDetail+"");
+        Log.i("NEXT", artTitle+"");
+        if (artTitle!=null) {
+            artTitle.setText(artDetail.getTitle().substring(9));
+            artTitle.postInvalidate();
+        }
     }
-
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -116,7 +122,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
         img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
 
 
-
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter bAdapter = bluetoothManager.getAdapter();
 
@@ -128,12 +133,35 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
             scanner.startScan(new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                    Observable.just(new ArtDetail(result.getDevice().toString(), "url")).subscribe
-                            (MainActivity.this);
-                    Log.i("SCAN", result.getDevice().toString());
+                    if (Constants.BEACONS.contains(result.getDevice().toString())) {
+
+                        Observable.just(new ArtDetail(result.getDevice().toString(), "url")).subscribe
+                                (MainActivity.this);
+                    }
+
+                    Log.i("SCAN", result.getDevice().toString() + "" + result.getRssi());
                 }
             });
-        }
+        } else {
+            Observable.timer(5, 4, TimeUnit.SECONDS).subscribe(lo -> {
+                String mac = Constants.BEACONS.get(lo.intValue() % Constants.BEACONS.size());
+                Log.i("FAKE MAC", mac);
+                Observable.just(new ArtDetail(mac, "url")).subscribe(MainActivity.this);
+            });
 
+
+        }
     }
+
+
+    private void setUpScene3ClickHandler() {
+        ImageView img = (ImageView) findViewById(R.id.img);
+        img.setOnClickListener(v ->{this.transitionToDetailActivity(img);});
+    }
+    private void transitionToDetailActivity(final View v) {
+        Intent intent = new Intent(this, DetailActivity.class);
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, v, "image");
+        startActivity(intent, options.toBundle());
+    }
+
 }
