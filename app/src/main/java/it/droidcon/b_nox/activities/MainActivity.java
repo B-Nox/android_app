@@ -109,10 +109,15 @@ public class MainActivity extends Activity {
     private void transitionToLoading() {
         currentState = STATE.LOADING_OPERA;
         TransitionManager.go(scene3, new AutoTransition());
-        scene3.setEnterAction(() ->
-                Picasso.with(this)
-                        .load(Constants.SERVER_ADDRESS + "/" + currentDetail.image)
-                        .fit().into(img));
+        reset_opera_info();
+    }
+
+    private void reset_opera_info() {
+        Picasso.with(this)
+                .load(Constants.SERVER_ADDRESS + "/" + currentDetail.image)
+                .fit().into((ImageView) findViewById(R.id.img));
+        ((TextView) findViewById(R.id.title_content)).setText(currentDetail.title);
+        Log.i("RESET", currentDetail.image + " --  " + currentDetail.title);
     }
 
     private void setUpBluetoothObserver() {
@@ -130,7 +135,7 @@ public class MainActivity extends Activity {
 
 
             scanner.startScan(new it.droidcon.b_nox.utils.ScanCallback(this));
-        } 
+        }
 
     }
 
@@ -160,13 +165,15 @@ public class MainActivity extends Activity {
     }
 
 
-
-
     public void onDetailLoaded() {
         Log.i("onDetailLoaded", "Loaded!");
 
         if (currentState.equals(STATE.MAIN_LOGO)) {
+            Log.i("DUNOOO", "TRANS");
             transitionToLoading();
+        } else if (currentState.equals(STATE.LOADING_OPERA)) {
+            Log.i("DUNOOO", "RESET");
+            reset_opera_info();
         }
 
         FilesDownloader downloader;

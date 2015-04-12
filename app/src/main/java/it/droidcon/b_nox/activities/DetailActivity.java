@@ -57,7 +57,10 @@ public class DetailActivity extends Activity {
         detail.audio = i.getStringExtra(MainActivity.DETAIL_EXTRA_AUDIO);
         detail.image = i.getStringExtra(MainActivity.DETAIL_EXTRA_IMAGE);
 
-        title.setText(detail == null || detail.title.isEmpty() ? "COOKIE JAR!" : detail.title);
+        title.setText(detail == null || detail.title == null || detail.title.isEmpty() ? "COOKIE " +
+                "JAR!" :
+                detail
+                .title);
 
         Picasso.with(this).load(Constants.SERVER_ADDRESS + "/" + detail.image)
                 .fit().into(img);

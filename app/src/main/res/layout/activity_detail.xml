@@ -13,17 +13,17 @@
         android:transitionName="title"
         android:gravity="center"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:textSize="40dp"
+        android:layout_margin="5dp"
+        android:textSize="38dp"
         style="@style/CodeFont"
         android:text="EXAMPLE"
         android:id="@+id/title_content"/>
 
     <ImageView
         android:layout_centerHorizontal="true"
-        android:layout_width="300dp"
+        android:layout_width="280dp"
         android:layout_below="@id/title_content"
-        android:layout_height="300dp"
+        android:layout_height="280dp"
         android:transitionName="image"
         android:background="#FF0"
         android:src="@drawable/sun_moon"
