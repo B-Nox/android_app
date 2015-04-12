@@ -20,12 +20,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import it.droidcon.b_nox.R;
 import it.droidcon.b_nox.data.ArtDetail;
 import it.droidcon.b_nox.data.FilesDownloader;
-import rx.Observable;
 import rx.Observer;
 
 
@@ -42,13 +45,17 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     private ImageView img;
     private TextView artTitle;
 
+	private ArtDetail currentDetail;
+	private ScanResult currentDevice;
+	private String serverAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+		this.currentDevice = null;
+		this.serverAddress = "http://192.168.23.254";
 
         decorView = getWindow().getDecorView();
 
@@ -114,8 +121,6 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
         img.setOnClickListener(v -> { TransitionManager.go(scene3, new AutoTransition()); });
 
-
-
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter bAdapter = bluetoothManager.getAdapter();
 
@@ -127,29 +132,84 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
             scanner.startScan(new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                    Observable.just(new ArtDetail(result.getDevice().toString())).subscribe
-                            (MainActivity.this);
-                    Log.i("SCAN", result.getDevice().toString());
+
+					if (currentDevice != null) {
+
+						if(currentDevice.getDevice().getAddress().startsWith("00:07:80")) {
+
+							if(result.getDevice().getAddress().startsWith("00:07:80") && (result.getRssi() > currentDevice.getRssi()) &&
+								!(result.getDevice().getAddress().equals(currentDevice.getDevice().getAddress()))) {
+
+								Log.i("NEW BLE", "Old: " + currentDevice.getDevice().toString() + " " + currentDevice.getRssi() +
+										" New: " + result.getDevice().toString() + " " + result.getRssi());
+
+								onNewDevice(result);
+							}
+						}
+						else if(result.getDevice().getAddress().startsWith("00:07:80")) {
+								Log.i("NEW BLE", "Old: " + currentDevice.getDevice().toString() + " " + currentDevice.getRssi() +
+										" New: " + result.getDevice().toString() + " " + result.getRssi());
+
+								onNewDevice(result);
+						}
+					}
+					else if(result.getDevice().getAddress().startsWith("00:07:80")) {
+						Log.i("NEW BLE", "New: " + result.getDevice().toString() + " " + result.getRssi());
+						onNewDevice(result);
+					}
                 }
             });
         }
 
     }
 
-    public void onImageDownload(String filePath) {
+	private void onNewDevice(ScanResult device) {
 
+		currentDevice = device;
+		currentDetail = new ArtDetail(this, currentDevice.getDevice().toString(), this.serverAddress);
+
+	}
+
+	public void onDetailLoaded() {
+
+		FilesDownloader downloader;
+
+		/* Fill the interface with the new data */
+
+		for(int i=0; i<currentDetail.images.length; i++) {
+			downloader = new FilesDownloader(this.getApplicationContext(), this,
+					this.currentDetail.images[i][0], "image");
+			Log.i("DL", "Starting download of " + this.serverAddress + "/" + this.currentDetail.images[i][0]);
+			downloader.execute(this.serverAddress + "/" + this.currentDetail.images[i][0]);
+		}
+
+		for(int i=0; i<currentDetail.audios.length; i++) {
+			downloader = new FilesDownloader(this.getApplicationContext(), this,
+					this.currentDetail.audios[i][0], "audio");
+			Log.i("DL", "Starting download of " + this.serverAddress + "/" + this.currentDetail.audios[i][0]);
+			downloader.execute(this.serverAddress + "/" + this.currentDetail.audios[i][0]);
+		}
+
+		for(int i=0; i<currentDetail.videos.length; i++) {
+			downloader = new FilesDownloader(this.getApplicationContext(), this,
+					this.currentDetail.videos[i][0], "video");
+			Log.i("DL", "Starting download of " + this.serverAddress + "/" + this.currentDetail.videos[i][0]);
+			downloader.execute(this.serverAddress + "/" + this.currentDetail.videos[i][0]);
+		}
+
+	}
+
+    public void onImageDownload(String filePath) {
+		Log.i("DL", "Download completed of " + filePath);
     }
 
     public void onAudioDownload(String filePath) {
-
+		Log.i("DL", "Download completed of " + filePath);
     }
 
     public void onVideoDownload(String filePath) {
-
+		Log.i("DL", "Download completed of " + filePath);
     }
-
-
-
 
 
 }

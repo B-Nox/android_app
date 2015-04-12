@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.PowerManager;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,11 +39,19 @@ public class FilesDownloader extends AsyncTask<String, Integer, String> {
         InputStream input = null;
         OutputStream output = null;
         HttpURLConnection connection = null;
-        String absolutePath = context.getFilesDir().getPath() + "/" + this.localFile;
-        try {
+        //String absolutePath = context.getFilesDir().getPath() + "/" + this.localFile;
+        String absolutePath = "/sdcard/b_nox/" + this.localFile;
+		try {
             URL url = new URL(sUrl[0]);
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
+
+			File dir = new File("/sdcard/b_nox/images");
+			dir.mkdirs();
+			dir = new File("/sdcard/b_nox/audios");
+			dir.mkdirs();
+			dir = new File("/sdcard/b_nox/videos");
+			dir.mkdirs();
 
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 return "Server returned HTTP " + connection.getResponseCode()
@@ -94,11 +103,15 @@ public class FilesDownloader extends AsyncTask<String, Integer, String> {
         switch (this.type) {
             case "image":
                 activity.onImageDownload(result);
+				break;
             case "audio":
                 activity.onAudioDownload(result);
+				break;
             case "video":
                 activity.onVideoDownload(result);
-        }
+        		break;
+			default: return;
+		}
 
     }
 
