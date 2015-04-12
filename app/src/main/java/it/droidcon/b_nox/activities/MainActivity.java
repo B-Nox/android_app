@@ -43,8 +43,8 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     private ImageView img;
     private TextView artTitle;
 
-    private ArtDetail currentDetail = null;
-    private ScanResult currentDevice;
+    public ArtDetail currentDetail = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,34 +128,7 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
 
             Log.i("ASD", "setup scan");
 
-            scanner.startScan(new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-
-                    if (currentDevice != null) {
-
-                        if (currentDevice.getDevice().getAddress().startsWith("00:07:80")) {
-
-                            if (result.getDevice().getAddress().startsWith("00:07:80") && (result.getRssi() > currentDevice.getRssi()) &&
-                                    !(result.getDevice().getAddress().equals(currentDevice.getDevice().getAddress()))) {
-
-                                Log.i("NEW BLE", "Old: " + currentDevice.getDevice().toString() + " " + currentDevice.getRssi() +
-                                        " New: " + result.getDevice().toString() + " " + result.getRssi());
-
-                                onNewDevice(result);
-                            }
-                        } else if (result.getDevice().getAddress().startsWith("00:07:80")) {
-                            Log.i("NEW BLE", "Old: " + currentDevice.getDevice().toString() + " " + currentDevice.getRssi() +
-                                    " New: " + result.getDevice().toString() + " " + result.getRssi());
-
-                            onNewDevice(result);
-                        }
-                    } else if (result.getDevice().getAddress().startsWith("00:07:80")) {
-                        Log.i("NEW BLE", "New: " + result.getDevice().toString() + " " + result.getRssi());
-                        onNewDevice(result);
-                    }
-                }
-            });
+            scanner.startScan(new it.droidcon.b_nox.utils.ScanCallback(this));
         } 
     }
 
@@ -172,12 +145,7 @@ public class MainActivity extends Activity implements Observer<ArtDetail> {
     }
 
 
-    private void onNewDevice(ScanResult device) {
 
-        currentDevice = device;
-        currentDetail = new ArtDetail(this, currentDevice.getDevice().toString(), Constants.SERVER_ADDRESS);
-
-    }
 
     public void onDetailLoaded() {
 
